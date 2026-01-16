@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Draft League of Legends</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+    /*  GLOBAL --------------------------------------------------------------*/
+/* Firefox */
+*{scrollbar-color:var(--scroll-thumb) var(--scroll-track);scrollbar-width:thin;}
+/* WebKit (Chrome / Edge / Safari) */
+*::-webkit-scrollbar        {width:10px;}
+*::-webkit-scrollbar-track  {background:var(--scroll-track);}
+*::-webkit-scrollbar-thumb  {background:var(--scroll-thumb);border-radius:6px;min-height:20%;}
+
+* {
+  scrollbar-width: none;                   /* Firefox */
+  -ms-overflow-style: none;                /* IE 10+ */
+}
+
+*::-webkit-scrollbar {
+  display: none;                           /* Chrome, Safari, Edge */
+}
+
+    :root{
+        --main-bg:#fff;--border:#111;--shadow:0 2px 12px rgba(0,0,0,.07);
+        --role-border:#222;--ban:#555;--enemy:#c00;--ally:#277ae6;--ideal:#1eb31e;
+        --scroll-thumb:#ae50e0;      /* violet - rose demandé */
+        --scroll-track:#00000000;
+    }
+    html,body{height:100%;margin:0;font-family:'Segoe UI',Arial,sans-serif;}
+    /*  BACKGROUND VIDEO  */
+    #bg-video{position:fixed;inset:0;object-fit:cover;width:100%;height:100%;z-index:-2;}
+    #bg-overlay{display:none;}
+
+    /*  GRID ----------------------------------------------------------------*/
+    .container{display:flex;height:calc(100vh - 2vh);padding:1vh .5vw;gap:20px;}
+    .left-panel,.center-panel,.right-panel{display:flex;flex-direction:column;min-width:0;min-height:0;}
+
+    /*  LEFT ---------------------------------------------------------------*/
+    .left-panel{
+      flex:0 0 320px;min-width:300px;background:#f8f8f8;
+      border:8px solid var(--border);border-radius:22px;padding:18px 12px;
+      box-shadow:var(--shadow);overflow-y:auto;overflow-x:hidden;
+    }
+
+    /*  CENTER -------------------------------------------------------------*/
+    .center-panel{
+      flex:1 1 auto;min-width:640px;background:#fff;
+      border:8px solid var(--border);border-radius:44px;margin:0 5px;padding:18px 10px;
+      box-shadow:var(--shadow);overflow:auto;
+    }
+    .role-columns{display:flex;flex:1;margin-top:10px;position: relative;}
+    .role-column{position: relative;flex:1;display:flex;flex-direction:column;align-items:center;margin-left:10px;padding-left:14px;}
+    .role-column:first-child{border-left:none;margin-left:0;padding-left:0;}
+    .role-column:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;      /* ajuste la marge haute selon ton design */
+  bottom: 12px;   /* ajuste la marge basse selon ton design */
+  width: 6px;     /* même épaisseur que ton ancien border-left */
+  background: rgba(0,0,0,1); /* même couleur */
+  border-radius: 10px; /* Plus la valeur est élevée, plus c'est rond */
+  z-index: 1;
+}
+    .role-column h3{margin:6px 0 17px 0;font-size:1.17em;font-weight:700;}
+    .role-column h3, h2{color:#fff; text-shadow:
+      -1.5px -1.5px 0 #000,
+      -1px  -1px   0 #000,
+       1px  -1px   0 #000,
+       1.5px -1.5px 0 #000,
+      -1.5px  1.5px 0 #000,
+      -1px   1px   0 #000,
+       1px   1px   0 #000,
+       1.5px  1.5px 0 #000,
+      -1.5px  0     0 #000,
+       1.5px  0     0 #000,
+       0    -1.5px  0 #000,
+       0     1.5px  0 #000;
+}
+
+    /*  RIGHT --------------------------------------------------------------*/
+    .right-panel{
+      flex:0 0 340px;min-width:320px;margin-left:12px;gap:9px;background:#fafcff;
+      border:8px solid var(--border);border-radius:22px;padding:20px 15px;
+      box-shadow:var(--shadow);overflow-y:auto;
+    }
+
+    /* ALL PANELS --------------------------------------------------------------*/
+    .left-panel,
+    .center-panel,
+    .right-panel{
+        background:rgba(255,255,255,0.12); /* voile léger */
+}
+
+    /* BOUTON AIDE ---------------------------------------------------------*/
+    #show-help{
+        position:fixed;top:10px;left:45px;z-index:111;
+        background:#cc6ef1ee;
+        color: #000;
+        border:2px solid #000;border-radius:8px;
+        font-size:1.2em;padding:4px 16px;
+        box-shadow:0 2px 8px #0002;
+        cursor:pointer;
+}
+#help-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);      /* fond sombre semi‑transparent */
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:300;                      /* au‑dessus de tout */
+}
+
+#help-overlay img{
+  max-width:80vw;
+  max-height:80vh;
+  border:4px solid #fff;
+  border-radius:12px;
+  box-shadow:0 0 15px #000;
+}
+
+#close-help{
+  margin-top:14px;
+  padding:12px 35px;
+  font-size: 1.6rem;
+  font-weight: 500;
+  background:#d30000;               /* rouge foncé pour rester cohérent */
+  color:#ebebeb;                       /* texte noir */
+  border: 2px solid #00000000;
+  border-radius:30px;
+  cursor:pointer;
+}
+
+
+    /*  LIST & ICONS ---------------------------------------------------------*/
+    :root{--icon-size:clamp(50px,calc(1.9vw + 12px),80px);--icon-gap:clamp(4px,calc(0.4vw + 1px),10px);}
+    .champion-list{display:flex;flex-wrap:wrap;gap:var(--icon-gap);justify-content:center;margin-bottom: 5px;}
+    .champion{width:var(--icon-size);height:var(--icon-size);border-radius:.17em;background-size:cover;background-position:center;border:2.5px solid #aaa;cursor:grab;box-shadow:0 0 7px #0002;transition:border .15s,box-shadow .2s;position:relative;}
+    .champion:hover, .champion:active{border-color:#222;box-shadow:0 0 7px #0005;cursor:grab;}
+
+    .champion-slot{width: calc(var(--icon-size) + 3px);height: calc(var(--icon-size) + 3px);background:#f4f4f4;border:1.5px dashed #b8c2c8;border-radius:9px;margin-left:8px;display:flex;align-items:center;justify-content:center;transition: width .18s, height .18s;}
+    .champion-slot.static{width: calc(var(--icon-size) + 3px);height: calc(var(--icon-size) + 3px);background:#eefae7;border-color:var(--ideal);padding: 3px;}    
+    .role-slot{display:flex;align-items:center;gap:6px;margin:2px 0;flex-wrap:nowrap;}
+    .role-slot>span{min-width:60px;text-align:right;font-weight:600;}
+
+    .drop-zone{background:#fff;border-radius:16px;box-shadow:0 0 0 1.5px #ddd;padding:7px 10px;margin-bottom:7px;}
+    #bans{border:3px solid var(--ban);}#enemies{border:3px solid var(--enemy);}#allies{border:3px solid var(--ally);}#ideal-comp{border:3px solid var(--ideal);}    
+    #bans{background:rgba(255, 255, 255, 0.25);}
+    #enemies{background:rgba(255, 46, 46, 0.2);}
+    #allies{background:rgba(0, 140, 255, 0.2);}
+    #ideal-comp{background:rgba(21, 255, 0, 0.2);}
+    .left-panel, .center-panel, .right-panel, #bans, #enemies, #allies, #ideal-comp{border-width:4px !important;/* épaisseur */ border-color:#000 !important;}  /* noir */
+    .drop-label{font-style:italic;font-weight:600;text-align:center;margin-bottom:10px;color:#000000;}
+    .droppable{min-height: calc(var(--icon-size) + 3px);height:auto;display:flex;flex-wrap:wrap;gap:15px;background:#f9fafd;border:1.5px dashed #bbb;border-radius:9px;padding:3px 3px;}
+    .droppable.highlight{background:#e6f0ff;border-color:var(--ally);}
+
+    #search-bar{margin-bottom:12px;padding:5px 8px;width:95%;border:1.2px solid #bbb;border-radius:5px;}
+
+    /*  Tooltips -----------------------------------------------------------*/
+    .champion::after{content:attr(data-name);position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--icon-size) + 1px);padding:6px 10px;white-space:nowrap;font-size:.85rem;color:#fff;background:rgba(0,0,0,1);border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .3s ease 0s;}
+    .champion:hover::after{opacity:1;transition-delay:0.5s;}
+    /* Visuel pendant le drag */
+.champion.dragging{
+  position:fixed;
+  z-index:9999;
+  pointer-events:none;   /* laisse passer le pointeur vers les cibles */
+  cursor:grabbing;
+}
+
+
+/*═════════════════════════════════════════════════════
+  Zones « bannis » & « ennemis »
+═════════════════════════════════════════════════════*/
+
+/* --- Par défaut : 1 à 4 icônes ► flex, 1 seule ligne centrée --- */
+.droppable[data-type="bans"],
+.droppable[data-type="enemies"]{
+  display:flex;              /* une ligne tant qu’on n’a pas 5 éléments */
+  flex-wrap:nowrap;          /* évite le retour à la ligne à 4 icônes   */
+  justify-content:center;    /* espace égal gauche / droite             */
+  gap:var(--icon-gap);
+}
+
+/* --- À partir de 5 icônes ► grille 3 colonnes --- */
+.droppable[data-type="bans"]:has(.champion:nth-child(5)),
+.droppable[data-type="enemies"]:has(.champion:nth-child(5)){
+  display:grid;
+  grid-template-columns:repeat(3,var(--icon-size));
+  grid-auto-rows:var(--icon-size);
+  justify-content:center;    /* centre la grille entière dans la cellule */
+  gap:var(--icon-gap);
+}
+
+/* --- EXACTEMENT 5 icônes ► on insère un “vide” en (ligne 2, colonne 1)
+       pour que les 2 vraies icônes soient en colonnes 2 & 3, donc centrées --- */
+.droppable[data-type="bans"]:has(.champion:nth-child(5)):not(:has(.champion:nth-child(6)))::before,
+.droppable[data-type="enemies"]:has(.champion:nth-child(5)):not(:has(.champion:nth-child(6)))::before{
+  content:"";
+  width:var(--icon-size);
+  height:var(--icon-size);
+  grid-row:2;
+  grid-column:1;
+}
+
+
+
+
+
+@media (max-width: 1499px) {
+  .container {
+    flex-direction: column;
+    height: auto;
+  }
+  .center-panel   { 
+    order: 1; 
+    margin: 0 0 16px 0;
+    min-height: 200px;
+    height: 30vh;
+    max-height: 500px;
+  }
+  .left-panel     { order: 2; margin: 0 0 16px 0; }
+  .right-panel    { order: 3; }
+
+  .left-panel,
+  .center-panel,
+  .right-panel {
+    min-width: 0;
+    max-width: none;
+    width: auto;
+  }
+
+  #allies,
+  #ideal-comp {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  #allies .role-slot,
+  #ideal-comp .role-slot {
+    margin-bottom: 0;
+    margin-right: 10px;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px;
+    min-width: unset;
+    width: auto;
+  }
+  #allies .role-slot > span,
+  #ideal-comp .role-slot > span {
+    min-width: 48px;
+    text-align: right;
+  }
+}
+
+
+  </style>
+</head>
+<body>
+  <!-- Background video -->
+  <video id="bg-video" autoplay muted loop playsinline>
+    <source src="assets/video/bg/spirit-blossom-akali.3840x2160.mp4" type="video/mp4">
+  </video>
+  <div id="bg-overlay"></div>
+
+  <!-- Help overlay remains unchanged -->
+  <div id="help-overlay" style="display:none;">
+    <img src="assets/img/ui/image-aide - Copie.png" alt="Aide">
+    <button id="close-help">FERMER</button>
+  </div>
+  <button id="show-help">Aide</button>
+
+  <div class="container">
+    <!-- LEFT -->
+    <div class="left-panel">
+      <h2 style="text-align:center;">Tous les champions</h2>
+      <input type="text" id="search-bar" placeholder="Rechercher...">
+      <div id="all-champions" class="champion-list"></div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center-panel">
+      <h2 style="text-align:center;margin-bottom:8px;">Champions par rôle</h2>
+      <div class="role-columns">
+        <div class="role-column" id="col-Top"><h3>Top</h3><div class="champion-list" data-role="Top"></div></div>
+        <div class="role-column" id="col-Jungle"><h3>Jungle</h3><div class="champion-list" data-role="Jungle"></div></div>
+        <div class="role-column" id="col-Mid"><h3>Mid</h3><div class="champion-list" data-role="Mid"></div></div>
+        <div class="role-column" id="col-ADC"><h3>ADC</h3><div class="champion-list" data-role="ADC"></div></div>
+        <div class="role-column" id="col-Support"><h3>Support</h3><div class="champion-list" data-role="Support"></div></div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right-panel">
+      <h2 style="text-align:center;margin-top:0;">Gestion Draft</h2>
+      <div class="drop-zone" id="bans"><div class="drop-label">Champions bannis</div><div class="champion-list droppable" data-type="bans"></div></div>
+      <div class="drop-zone" id="enemies"><div class="drop-label">Champions ennemis</div><div class="champion-list droppable" data-type="enemies"></div></div>
+      <div class="drop-zone" id="allies">
+        <div class="drop-label">Champions alliés</div>
+        <div class="role-slot"><span>Top</span><div class="champion-slot droppable" data-type="allies" data-slot="Top"></div></div>
+        <div class="role-slot"><span>Jungle</span><div class="champion-slot droppable" data-type="allies" data-slot="Jungle"></div></div>
+        <div class="role-slot"><span>Mid</span><div class="champion-slot droppable" data-type="allies" data-slot="Mid"></div></div>
+        <div class="role-slot"><span>ADC</span><div class="champion-slot droppable" data-type="allies" data-slot="ADC"></div></div>
+        <div class="role-slot"><span>Support</span><div class="champion-slot droppable" data-type="allies" data-slot="Support"></div></div>
+      </div>
+      <div class="drop-zone" id="ideal-comp">
+        <div class="drop-label">Composition idéale (IA)</div>
+        <div class="role-slot"><span>Top</span><div class="champion-slot static" id="ideal-Top"></div></div>
+        <div class="role-slot"><span>Jungle</span><div class="champion-slot static" id="ideal-Jungle"></div></div>
+        <div class="role-slot"><span>Mid</span><div class="champion-slot static" id="ideal-Mid"></div></div>
+        <div class="role-slot"><span>ADC</span><div class="champion-slot static" id="ideal-ADC"></div></div>
+        <div class="role-slot"><span>Support</span><div class="champion-slot static" id="ideal-Support"></div></div>
+      </div>
+    </div>
+</div>
+
+<script>
+  let draggedElement = null;
+
+  function removeOtherOccurrences(name, exceptNode) {
+  document.querySelectorAll(`.champion[data-name='${name}']`).forEach(el => {
+    if (el !== exceptNode) el.remove();
+  });
+}
+
+// Mapping statique des rôles selon votre liste complète
+const ROLE_MAPPING = {
+  "Aatrox": ["Top"],
+  "Ahri": ["Mid"],
+  "Akali": ["Top", "Mid"],
+  "Akshan": ["Mid"],
+  "Alistar": ["Support"],
+  "Ambessa": ["Top"],
+  "Amumu": ["Jungle", "Support"],
+  "Anivia": ["Mid"],
+  "Annie": ["Mid"],
+  "Aphelios": ["ADC"],
+  "Ashe": ["ADC", "Support"],
+  "Aurelion Sol": ["Mid"],
+  "Aurora": ["Top", "Mid"],
+  "Azir": ["Mid"],
+  "Bard": ["Support"],
+  "Bel’Veth": ["Jungle"],
+  "Blitzcrank": ["Support"],
+  "Brand": ["Jungle", "Mid", "Support"],
+  "Braum": ["Support"],
+  "Briar": ["Jungle"],
+  "Caitlyn": ["ADC"],
+  "Camille": ["Top", "Jungle"],
+  "Cassiopeia": ["Top", "Mid"],
+  "Cho'Gath": ["Top", "Jungle"],
+  "Corki": ["Mid", "ADC"],
+  "Darius": ["Top", "Jungle"],
+  "Diana": ["Jungle", "Mid"],
+  "Dr. Mundo": ["Top", "Jungle"],
+  "Draven": ["ADC"],
+  "Ekko": ["Jungle", "Mid"],
+  "Elise": ["Jungle"],
+  "Evelynn": ["Jungle"],
+  "Ezreal": ["ADC"],
+  "Fiddlesticks": ["Jungle", "Support"],
+  "Fiora": ["Top"],
+  "Fizz": ["Mid"],
+  "Galio": ["Mid", "Support"],
+  "Gangplank": ["Top"],
+  "Garen": ["Top", "Jungle"],
+  "Gnar": ["Top"],
+  "Gragas": ["Top", "Jungle", "Mid", "Support"],
+  "Graves": ["Jungle"],
+  "Gwen": ["Top", "Jungle"],
+  "Hecarim": ["Jungle"],
+  "Heimerdinger": ["Top", "Mid"],
+  "Hwei": ["Mid", "ADC", "Support"],
+  "Illaoi": ["Top"],
+  "Irelia": ["Top", "Mid"],
+  "Ivern": ["Jungle"],
+  "Janna": ["Support"],
+  "Jarvan IV": ["Jungle"],
+  "Jax": ["Top", "Jungle"],
+  "Jayce": ["Top", "Mid"],
+  "Jhin": ["ADC"],
+  "Jinx": ["ADC"],
+  "K’Sante": ["Top"],
+  "Kai’Sa": ["ADC"],
+  "Kalista": ["ADC"],
+  "Karma": ["Mid", "Support"],
+  "Karthus": ["Jungle"],
+  "Kassadin": ["Mid"],
+  "Katarina": ["Mid"],
+  "Kayle": ["Top", "Mid"],
+  "Kayn": ["Top", "Jungle"],
+  "Kennen": ["Top", "Mid"],
+  "Kha’Zix": ["Jungle"],
+  "Kindred": ["Jungle"],
+  "Kled": ["Top"],
+  "Kog’Maw": ["ADC"],
+  "LeBlanc": ["Mid"],
+  "Lee Sin": ["Jungle"],
+  "Leona": ["Support"],
+  "Lillia": ["Jungle"],
+  "Lissandra": ["Mid"],
+  "Lucian": ["ADC"],
+  "Lulu": ["Support"],
+  "Lux": ["Mid", "Support"],
+  "Malphite": ["Top", "Jungle", "Mid", "Support"],
+  "Malzahar": ["Mid"],
+  "Maokai": ["Top", "Jungle", "Support"],
+  "Master Yi": ["Jungle"],
+  "Mel": ["Mid", "Support"],
+  "Milio": ["Support"],
+  "Miss Fortune": ["ADC"],
+  "Mordekaiser": ["Top"],
+  "Morgana": ["Mid", "Support"],
+  "Naafiri": ["Jungle", "Mid"],
+  "Nami": ["Support"],
+  "Nasus": ["Top"],
+  "Nautilus": ["Support"],
+  "Neeko": ["Mid", "Support"],
+  "Nidalee": ["Jungle"],
+  "Nilah": ["ADC"],
+  "Nocturne": ["Jungle"],
+  "Nunu et Willump": ["Jungle"],
+  "Olaf": ["Top", "Jungle"],
+  "Orianna": ["Mid"],
+  "Ornn": ["Top"],
+  "Pantheon": ["Top", "Jungle", "Mid", "Support"],
+  "Poppy": ["Top", "Jungle", "Support"],
+  "Pyke": ["Support"],
+  "Qiyana": ["Jungle", "Mid"],
+  "Quinn": ["Top"],
+  "Rakan": ["Support"],
+  "Rammus": ["Jungle"],
+  "Rek’Sai": ["Jungle"],
+  "Rell": ["Support"],
+  "Renata Glasc": ["Support"],
+  "Renekton": ["Top"],
+  "Rengar": ["Jungle"],
+  "Riven": ["Top"],
+  "Rumble": ["Top"],
+  "Ryze": ["Top", "Mid"],
+  "Samira": ["ADC"],
+  "Sejuani": ["Jungle"],
+  "Senna": ["ADC", "Support"],
+  "Seraphine": ["Mid", "ADC", "Support"],
+  "Sett": ["Top"],
+  "Shaco": ["Jungle", "Support"],
+  "Shen": ["Top", "Support"],
+  "Shyvana": ["Jungle"],
+  "Singed": ["Top"],
+  "Sion": ["Top"],
+  "Sivir": ["ADC"],
+  "Skarner": ["Jungle"],
+  "Smolder": ["Mid", "ADC"],
+  "Sona": ["Support"],
+  "Soraka": ["Support"],
+  "Swain": ["Mid", "ADC", "Support"],
+  "Sylas": ["Top", "Jungle", "Mid"],
+  "Syndra": ["Mid"],
+  "Tahm Kench": ["Top", "Support"],
+  "Taliyah": ["Jungle", "Mid"],
+  "Talon": ["Jungle", "Mid"],
+  "Taric": ["Support"],
+  "Teemo": ["Top", "Jungle", "Support"],
+  "Thresh": ["Support"],
+  "Tristana": ["Mid", "ADC"],
+  "Trundle": ["Top", "Jungle"],
+  "Tryndamere": ["Top"],
+  "Twisted Fate": ["Mid"],
+  "Twitch": ["Jungle", "ADC", "Support"],
+  "Udyr": ["Top", "Jungle"],
+  "Urgot": ["Top"],
+  "Varus": ["Top", "Mid", "ADC"],
+  "Vayne": ["Top", "ADC"],
+  "Veigar": ["Mid", "Support"],
+  "Vel’Koz": ["Mid", "Support"],
+  "Vex": ["Mid"],
+  "Vi": ["Jungle"],
+  "Viego": ["Jungle"],
+  "Viktor": ["Mid"],
+  "Vladimir": ["Top", "Mid"],
+  "Volibear": ["Top", "Jungle"],
+  "Warwick": ["Top", "Jungle"],
+  "Wukong": ["Top", "Jungle"],
+  "Xayah": ["ADC"],
+  "Xerath": ["Mid", "Support"],
+  "Xin Zhao": ["Jungle"],
+  "Yasuo": ["Top", "Mid", "ADC"],
+  "Yone": ["Top", "Mid"],
+  "Yorick": ["Top"],
+  "Yunara": ["ADC"],
+  "Yuumi": ["Support"],
+  "Zac": ["Top", "Jungle", "Support"],
+  "Zed": ["Jungle", "Mid"],
+  "Zeri": ["ADC"],
+  "Ziggs": ["Mid", "ADC", "Support"],
+  "Zilean": ["Mid", "Support"],
+  "Zoe": ["Mid", "Support"],
+  "Zyra": ["Mid", "Support"]
+};
+
+/* ———————————————————————————————————
+    Correction d'images
+———————————————————————————————————— */
+
+const IMAGE_FIX = {
+  "Bel’Veth":  "Belveth",
+  "Cho'Gath":  "Chogath",
+  "Kai’Sa":    "Kaisa",
+  "Kha’Zix":   "Khazix",
+  "LeBlanc":   "Leblanc",
+  "Nunu et Willump": "Nunu",
+  "Renata Glasc": "Renata",
+  "Vel’Koz":   "Velkoz",
+  "Wukong":    "MonkeyKing"
+};
+
+/* ———————————————————————————————————
+   Variables globales
+———————————————————————————————————— */
+let champions   = [];     // tableau d’objets {name, roles[], img}
+let riotVersion = "";     // version du DataDragon
+let draggedEl   = null;   // élément actuellement en drag
+let offsetX     = 0;      // décalage curseur → gauche icône
+let offsetY     = 0;      // décalage curseur → haut   icône
+let originalParent = null; // parent d’origine (fallback)
+
+/* ———————————————————————————————————
+   1. Récupération de la dernière version & build du tableau
+———————————————————————————————————— */
+async function buildChampionList(){
+  try{
+    const versions = await fetch("https://ddragon.leagueoflegends.com/api/versions.json")
+                          .then(r => r.json());
+    riotVersion = versions[0];
+  }catch(err){
+    console.error("Impossible de récupérer la version Riot ⇒ fallback fixe.");
+    riotVersion = "14.14.1";        // valeur arbitraire récente
+  }
+
+  champions = Object.entries(ROLE_MAPPING).map(([name, roles]) => ({
+    name,
+    roles,
+    img:`https://ddragon.leagueoflegends.com/cdn/${riotVersion}/img/champion/${(IMAGE_FIX[name]||name).replace(/[^A-Za-z0-9]/g,"")}.png`
+  }));
+}
+
+/* ———————————————————————————————————
+   2. Création DOM d’un champion
+———————————————————————————————————— */
+function createChampionDiv(ch){
+  const d = document.createElement("div");
+  d.className = "champion";
+  d.style.backgroundImage = `url('${ch.img}')`;
+  d.dataset.name  = ch.name;
+  d.dataset.roles = ch.roles.join(",");
+  d.draggable     = false;          // on désactive le DnD natif
+
+  /* Clic‑droit ⇒ suppression dans les zones de droite */
+  d.oncontextmenu = e => {
+    e.preventDefault();
+    if (d.closest("#bans, #enemies, #allies")) restoreChampion(ch.name);
+  };
+
+  /* Drag maison basé sur Pointer Events */
+  d.addEventListener("pointerdown", onPointerDownChampion);
+  return d;
+}
+
+/* ———————————————————————————————————
+   3. Insertion alphabétique dans un conteneur
+———————————————————————————————————— */
+function insertSorted(div, container){
+  const n = div.dataset.name.toLowerCase();
+  const before = [...container.children].find(el => el.dataset.name.toLowerCase() > n);
+  before ? container.insertBefore(div, before) : container.appendChild(div);
+}
+
+/* ———————————————————————————————————
+   4. Remise à zéro d’un champion
+———————————————————————————————————— */
+function removeEverywhere(name){
+  document.querySelectorAll(`.champion[data-name='${name}']`).forEach(el => el.remove());
+}
+function restoreChampion(name){
+  removeEverywhere(name);
+  const champ = champions.find(c => c.name === name);
+  if (!champ) return;
+
+  /* Colonne gauche */
+  const left = createChampionDiv(champ); left.dataset.origin = "left";
+  insertSorted(left, document.getElementById("all-champions"));
+
+  /* Colonne centrale (par rôle) – une copie par rôle */
+  champ.roles.forEach(role => {
+    const col = document.querySelector(`#col-${role} .champion-list`);
+    if (col){
+      const clone = createChampionDiv(champ);
+      clone.dataset.origin = "center";
+      insertSorted(clone, col);
+    }
+  });
+  enableDrag();
+}
+
+/* ———————————————————————————————————
+   5. Peuplement des panels
+———————————————————————————————————— */
+function fillAll(){
+  const wrap = document.getElementById("all-champions");
+  wrap.innerHTML = "";
+  champions.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(ch => {
+    const d = createChampionDiv(ch);
+    d.dataset.origin = "left";
+    wrap.appendChild(d);
+  });
+}
+
+function fillCenter(){
+  ["Top","Jungle","Mid","ADC","Support"].forEach(role => {
+    const col = document.querySelector(`#col-${role} .champion-list`);
+    if (!col) return;
+    col.innerHTML = "";
+    champions.filter(c => c.roles.includes(role))
+             .sort((a,b)=>a.name.localeCompare(b.name))
+             .forEach(ch => {
+               const d = createChampionDiv(ch);
+               d.dataset.origin = "center";
+               insertSorted(d, col);
+             });
+  });
+}
+
+/* ———————————————————————————————————
+   6. Recherche live dans #all-champions
+———————————————————————————————————— */
+function bindSearch(){
+  const sb = document.getElementById("search-bar");
+  if (!sb) return;
+  sb.addEventListener("input", e => {
+    const term = e.target.value.trim().toLowerCase();
+    document.querySelectorAll("#all-champions .champion").forEach(el => {
+      el.style.display = term === "" || el.dataset.name.toLowerCase().includes(term) ? "" : "none";
+    });
+  });
+}
+
+/* ———————————————————————————————————
+   7. Overlay d’aide
+———————————————————————————————————— */
+function bindHelp(){
+  document.getElementById("show-help")?.addEventListener("click", () => {
+    document.getElementById("help-overlay").style.display = "flex";
+  });
+  document.getElementById("close-help")?.addEventListener("click", () => {
+    document.getElementById("help-overlay").style.display = "none";
+  });
+}
+
+/* ———————————————————————————————————
+   8. Drag & Drop (Pointer Events)
+———————————————————————————————————— */
+function onPointerDownChampion(e){
+  const div = e.currentTarget;
+  e.preventDefault();
+
+  draggedEl = div;
+  originalParent = div.parentElement;
+
+  const rect = div.getBoundingClientRect();
+  offsetX = e.clientX - rect.left;
+  offsetY = e.clientY - rect.top;
+
+  div.classList.add("dragging");
+  document.body.appendChild(div);
+  moveDragged(e);
+
+  div.setPointerCapture(e.pointerId);
+  document.addEventListener("pointermove", moveDragged);
+  document.addEventListener("pointerup",   onPointerUpChampion);
+}
+
+function moveDragged(ev){
+  if (!draggedEl) return;
+  draggedEl.style.left = `${ev.clientX - offsetX}px`;
+  draggedEl.style.top  = `${ev.clientY - offsetY}px`;
+}
+
+function onPointerUpChampion(ev){
+  if (!draggedEl) return;
+
+  document.removeEventListener("pointermove", moveDragged);
+  document.removeEventListener("pointerup",   onPointerUpChampion);
+  draggedEl.releasePointerCapture(ev.pointerId);
+
+  const target = document.elementFromPoint(ev.clientX, ev.clientY)?.closest(".droppable, .champion-slot.droppable");
+  const name   = draggedEl.dataset.name;
+  let placed   = false;
+
+  /* Slots alliés */
+  if (target?.classList.contains("champion-slot")){
+    if (!target.querySelector(".champion")){
+      removeEverywhere(name);
+      target.appendChild(draggedEl);
+      placed = true;
+    }
+  }
+  /* Zones simples (bans, enemies) */
+  else if (target?.classList.contains("droppable")){
+    const type = target.dataset.type;
+    const max  = (type === "bans" || type === "enemies") ? 5 : 99;
+
+    if (target.querySelectorAll(".champion").length < max){
+      removeEverywhere(name);
+      target.appendChild(draggedEl);
+      placed = true;
+    }else{
+      target.style.animation = "shake .3s";
+      setTimeout(()=>target.style.animation="", 300);
+    }
+  }
+
+  if (!placed) restoreChampion(name);
+
+  if (placed){
+    draggedEl.classList.remove("dragging");
+    draggedEl.style.left = draggedEl.style.top = "";
+  }
+  draggedEl = null;
+}
+
+function enableDrag(){
+  document.querySelectorAll(".champion").forEach(div => {
+    if (!div._dragReady){
+      div.addEventListener("pointerdown", onPointerDownChampion);
+      div._dragReady = true;
+    }
+  });
+}
+
+/* ———————————————————————————————————
+   9. Highlight visuel des zones de drop
+———————————————————————————————————— */
+function makeDropHighlight(el){
+  el.addEventListener("pointerenter", ()=>el.classList.add("highlight"));
+  el.addEventListener("pointerleave", ()=>el.classList.remove("highlight"));
+}
+
+/* ———————————————————————————————————
+   10. Initialisation globale
+———————————————————————————————————— */
+async function init(){
+  await buildChampionList();
+  fillAll();
+  fillCenter();
+  enableDrag();
+  bindSearch();
+  bindHelp();
+
+  makeDropHighlight(document.querySelector('[data-type="bans"]'));
+  makeDropHighlight(document.querySelector('[data-type="enemies"]'));
+  document.querySelectorAll('.champion-slot.droppable').forEach(makeDropHighlight);
+}
+
+/* Lancement */
+init();
+
+
+</script>
+</body>
+</html>

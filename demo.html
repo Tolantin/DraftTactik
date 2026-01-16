@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Draft League of Legends</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Les balises <style> (CSS) et <script> (JS) seront ajoutées plus tard -->
+</head>
+<body>
+  <!-- Aide ------------------------------------------------------------------ -->
+  <div id="help-overlay">
+    <img src="assets/img/ui/image-aide%20-%20Copie.png" alt="Aide">
+    <button id="close-help">Fermer</button>
+  </div>
+  <button id="show-help">Aide</button>
+
+  <!-- Grille principale ------------------------------------------------------ -->
+  <div class="container">
+    <!-- Colonne gauche ------------------------------------------------------- -->
+    <div class="left-panel">
+      <h2 style="text-align:center;">Tous les champions</h2>
+      <input type="text" id="search-bar" placeholder="Rechercher...">
+      <div id="all-champions" class="champion-list all-vertical"></div>
+    </div>
+
+    <!-- Panneau central ------------------------------------------------------ -->
+    <div class="center-panel">
+      <h2 style="text-align:center;margin-bottom:8px;">Champions par rôle</h2>
+      <div class="role-columns">
+        <div class="role-column" id="col-Top"><h3>Top</h3><div class="champion-list" data-role="Top"></div></div>
+        <div class="role-column" id="col-Jungle"><h3>Jungle</h3><div class="champion-list" data-role="Jungle"></div></div>
+        <div class="role-column" id="col-Mid"><h3>Mid</h3><div class="champion-list" data-role="Mid"></div></div>
+        <!-- Support placé avant ADC -->
+        <div class="role-column" id="col-Support"><h3>Support</h3><div class="champion-list" data-role="Support"></div></div>
+        <div class="role-column" id="col-ADC"><h3>ADC</h3><div class="champion-list" data-role="ADC"></div></div>
+      </div>
+    </div>
+
+    <!-- Colonne droite ------------------------------------------------------- -->
+    <div class="right-panel">
+      <div class="drop-zone" id="bans">
+        <div class="drop-label">Champions Bannis</div>
+        <div class="champion-list droppable" data-type="bans"></div>
+      </div>
+
+      <div class="drop-zone" id="enemies">
+        <div class="drop-label">Champions Ennemis</div>
+        <div class="champion-list droppable" data-type="enemies"></div>
+      </div>
+
+      <div class="drop-zone" id="allies">
+        <div class="drop-label">Champions Alliés</div>
+        <div class="role-slot"><span>Top</span>    <div class="champion-slot droppable" data-type="allies" data-slot="Top"    ></div></div>
+        <div class="role-slot"><span>Jungle</span> <div class="champion-slot droppable" data-type="allies" data-slot="Jungle" ></div></div>
+        <div class="role-slot"><span>Mid</span>    <div class="champion-slot droppable" data-type="allies" data-slot="Mid"    ></div></div>
+        <!-- Support avant ADC -->
+        <div class="role-slot"><span>Support</span><div class="champion-slot droppable" data-type="allies" data-slot="Support"></div></div>
+        <div class="role-slot"><span>ADC</span>    <div class="champion-slot droppable" data-type="allies" data-slot="ADC"    ></div></div>
+      </div>
+
+      <div class="drop-zone" id="ideal-comp">
+        <div class="drop-label">Composition idéale (IA)</div>
+        <div class="role-slot"><span>Top</span>    <div class="champion-slot static" id="ideal-Top"    ></div></div>
+        <div class="role-slot"><span>Jungle</span> <div class="champion-slot static" id="ideal-Jungle" ></div></div>
+        <div class="role-slot"><span>Mid</span>    <div class="champion-slot static" id="ideal-Mid"    ></div></div>
+        <!-- Support avant ADC -->
+        <div class="role-slot"><span>Support</span><div class="champion-slot static" id="ideal-Support"></div></div>
+        <div class="role-slot"><span>ADC</span>    <div class="champion-slot static" id="ideal-ADC"    ></div></div>
+      </div>
+    </div>
+  </div>
+
+<!-- Styles CSS ------------------------------------------------------------ -->
+<style>
+/*************************************
+*  RÉGLAGES GÉNÉRAUX
+*************************************/
+*{ box-sizing:border-box; }
+:root{
+  --main-bg:#fff; --border:#111; --shadow:0 2px 12px rgba(0,0,0,.07);
+  --role-border:#222; --ban:#555; --enemy:#c00; --ally:#277ae6; --ideal:#1eb31e;
+}
+html,body{
+  height:100%;
+  margin:0;
+  background:var(--main-bg);
+  font-family:'Segoe UI', Arial, sans-serif;
+}
+
+/*************************************
+*  GRILLE PRINCIPALE
+*************************************/
+.container{
+  display:flex;
+  height:100vh;
+  padding:1vh .5vw;
+  gap:20px;
+}
+.left-panel,.center-panel,.right-panel{
+  min-width:0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+
+/*************************************
+*  COLONNE GAUCHE – 4 icônes/ligne
+*************************************/
+.left-panel{
+  /* largeur suffisante pour 4 x 60 px + gaps */
+  flex:0 0 320px;
+  min-width:300px;
+  background:#f8f8f8;
+  border:3px solid var(--border);
+  border-radius:22px;
+  padding:18px 12px;
+  box-shadow:var(--shadow);
+  overflow-y:auto;           /* liste verticale */
+  overflow-x:hidden;         /* pas de scroll horizontal */
+}
+
+/*************************************
+*  PANNEAU CENTRAL
+*************************************/
+.center-panel{
+  flex:1 1 auto;
+  min-width:640px;
+  background:#fff;
+  border:5px solid var(--border);
+  border-radius:44px;
+  margin:0 5px;
+  padding:18px 10px;
+  box-shadow:var(--shadow);
+  overflow:auto;
+}
+/* colonnes + barres verticales */
+.role-columns{
+  display:flex;
+  flex:1;
+  margin-top:10px;
+}
+.role-column{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  border-left:3px solid var(--role-border);
+  margin-left:10px;
+  padding-left:14px;
+}
+.role-column:first-child{
+  border-left:none;
+  margin-left:0;
+  padding-left:0;
+}
+.role-column h3{
+  margin:6px 0;
+  font-size:1.17em;
+  font-weight:700;
+}
+
+/*************************************
+*  COLONNE DROITE
+*************************************/
+.right-panel{
+  flex:0 0 340px;
+  min-width:320px;
+  margin-left:12px;
+  gap:9px;
+  background:#fafcff;
+  border:3px solid var(--border);
+  border-radius:22px;
+  padding:18px 12px;
+  box-shadow:var(--shadow);
+  overflow-y:auto;
+}
+
+/*************************************
+*  LISTES & ICÔNES
+*************************************/
+:root{
+  --icon-size:clamp(50px,calc(1.9vw + 12px),80px);
+  --icon-gap :clamp(4px ,calc(0.4vw + 1px),10px);
+}
+.champion-list,
+.champion-list.all-vertical{
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--icon-gap);
+  justify-content:center;
+}
+.champion{
+  width:var(--icon-size);
+  height:var(--icon-size);
+  border-radius:.17em;
+  background-size:cover;
+  background-position:center;
+  border:2.5px solid #aaa;
+  cursor:grab;
+  box-shadow:0 0 7px #0002;
+  transition:border .15s, box-shadow .2s;
+  position:relative;          /* pour le tooltip */
+}
+.champion:active{border-color:#222;}
+
+/* slots Alliés / IA */
+.champion-slot{
+  min-width:var(--icon-size);
+  min-height:var(--icon-size);
+  background:#f4f4f4;
+  border:1.5px dashed #b8c2c8;
+  border-radius:9px;
+  margin-left:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.champion-slot.static{
+  background:#eefae7;
+  border-color:var(--ideal);
+}
+.role-slot{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin:2px 0;
+}
+.role-slot>span{
+  min-width:60px;
+  text-align:right;
+  font-weight:600;
+}
+
+/* zones drag&drop */
+.drop-zone{
+  background:#fff;
+  border-radius:16px;
+  box-shadow:0 0 0 1.5px #ddd;
+  padding:7px 10px;
+  margin-bottom:7px;
+}
+#bans    {border:3px solid var(--ban);}
+#enemies {border:3px solid var(--enemy);}
+#allies  {border:3px solid var(--ally);}
+#ideal-comp{border:3px solid var(--ideal);}
+.drop-label{
+  font-style:italic;
+  text-align:center;
+  margin-bottom:3px;
+  color:#444;
+}
+.droppable{
+  min-height:54px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  background:#f9fafd;
+  border:1.5px dashed #bbb;
+  border-radius:9px;
+  padding:7px 3px;
+}
+.droppable.highlight{
+  background:#e6f0ff;
+  border-color:var(--ally);
+}
+
+/* Divers */
+#search-bar{
+  margin-bottom:12px;
+  padding:5px 8px;
+  width:95%;
+  border:1.2px solid #bbb;
+  border-radius:5px;
+}
+#help-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.82);
+  z-index:100;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+}
+#help-overlay img{
+  max-width:700px;
+  width:98vw;
+  max-height:90vh;
+  border-radius:22px;
+  border:2px solid #fff;
+}
+#close-help{
+  margin-top:12px;
+  font-size:2em;
+  background:#b9000a;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  padding:0 20px;
+  cursor:pointer;
+}
+#show-help{
+  position:fixed;
+  top:10px;
+  left:15px;
+  z-index:111;
+  background:#fff;
+  color:#333;
+  border:2px solid #333;
+  border-radius:8px;
+  font-size:1.2em;
+  padding:4px 16px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 2px 8px #0002;
+}
+
+/* tooltip personnalisé */
+.champion::after{
+  content:attr(data-name);
+  position:absolute;
+  left:50%; transform:translateX(-50%);
+  bottom:calc(var(--icon-size) + 1px);
+  padding:6px 10px;
+  white-space:nowrap;
+  font-size:.85rem;
+  color:#fff;
+  background:rgba(0,0,0,1);
+  border-radius:4px;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .12s ease 0s;
+}
+.champion:hover::after{
+  opacity:1;
+  transition-delay:.2s;
+}
+
+/* responsive ≤ 900 px */
+@media(max-width:900px){
+  .container{flex-direction:column;height:auto;}
+  .left-panel,.right-panel{flex:0 0 auto;min-width:0;max-width:none;}
+  .center-panel{flex:0 0 auto;min-width:0;}
+}
+
+</style>
+<script>
+/* =========================================================================
+   1. CONSTANTES
+===========================================================================*/
+const LANES = {Top:"top", Jungle:"jungle", Mid:"mid", ADC:"adc", Support:"support"};
+const lolalytics = lane => `https://lolalytics.com/lol/tierlist/?lane=${lane}`;
+const CORS = url  => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;   // ← /get (JSON)
+
+const FIXED = {Blitzcrank:"Support",Alistar:"Support",Braum:"Support",Leona:"Support",
+               Poppy:"Support",Nautilus:"Support",Rell:"Support",
+               Lillia:"Jungle",Galio:"Mid",Nilah:"ADC",Jayce:"Top"};
+
+var ID2NAME = {}, ROLE_BY = {}, CHAMPS = [], riotVer = "";
+
+/* =========================================================================
+   2. UTIL  : id → nom approximatif (si RiotMap absent)
+===========================================================================*/
+function guessName(id){
+  return id.replace(/([A-Z])/g," $1").trim()
+           .replace(/ Willump$/," & Willump")
+           .replace(/ Chogath/i,"Cho'Gath")
+           .replace(/ Kog Maw/i,"Kog'Maw")
+           .replace(/ Vel Koz/i,"Vel'Koz")
+           .replace(/ Rek Sai/i,"Rek'Sai")
+           .replace(/ Kai Sa/i,"Kai'Sa");
+}
+
+/* =========================================================================
+   3.  LISTE RIOT  (id, nom, image)
+===========================================================================*/
+async function loadRiot(){
+  riotVer = (await fetch("https://ddragon.leagueoflegends.com/api/versions.json").then(r=>r.json()))[0];
+  const data = await fetch(`https://ddragon.leagueoflegends.com/cdn/${riotVer}/data/en_US/champion.json`).then(r=>r.json());
+  Object.values(data.data).forEach(c=>{
+    ID2NAME[c.id]=c.name;
+    CHAMPS.push({name:c.name,tags:c.tags,
+                 img:`https://ddragon.leagueoflegends.com/cdn/${riotVer}/img/champion/${c.image.full}`});
+  });
+}
+
+/* =========================================================================
+   4.  SCRAPER LOLALYTICS  (via CORS JSON)
+===========================================================================*/
+async function scrapeLane(laneKey,laneCode){
+  const html = await fetch(CORS(lolalytics(laneCode)))
+                        .then(r=>r.ok?r.json():Promise.reject(r.status))
+                        .then(j=>j.contents);         // <-- vraie page HTML
+  const altRe  = /class="champion-icon"[^>]+alt="([^"]+)"/gi;
+  const nameRe = /<div class="name">([^<]+)<\/div>/gi;
+  let m;
+  while((m=altRe.exec(html))!==null){
+    const n = ID2NAME[m[1]] || guessName(m[1]);
+    ROLE_BY[n]=laneKey;
+  }
+  while((m=nameRe.exec(html))!==null){
+    ROLE_BY[m[1].trim()]=laneKey;
+  }
+}
+async function loadLolalytics(){
+  try{
+    await Promise.all(Object.entries(LANES).map(([k,v])=>scrapeLane(k,v)));
+    console.log("Lolalytics rôles :",Object.keys(ROLE_BY).length);
+  }catch(e){console.warn("Lolalytics indisponible :",e);}
+}
+
+/* =========================================================================
+   5.  RÔLE FINAL
+===========================================================================*/
+function decideRole(c){
+  if(FIXED[c.name])                 return FIXED[c.name];
+  if(ROLE_BY[c.name])               return ROLE_BY[c.name];
+  if(c.tags.indexOf("Support")>-1)  return "Support";
+  if(c.tags.indexOf("Marksman")>-1) return "ADC";
+  if(c.tags.indexOf("Mage")>-1||c.tags.indexOf("Assassin")>-1) return "Mid";
+  return "Top";
+}
+function setRoles(){CHAMPS.forEach(c=>c.role=decideRole(c));}
+
+/* =========================================================================
+   6.  UI helpers  (icônes, DnD, reset)
+===========================================================================*/
+function makeIcon(c){
+  const d=document.createElement("div");
+  d.className="champion";
+  d.style.backgroundImage=`url('${c.img}')`;
+  d.draggable=true;
+  d.dataset.name=c.name; d.dataset.role=c.role;
+  d.oncontextmenu=e=>{e.preventDefault();if(d.closest("#bans,#enemies,#allies")) reset(c.name);};
+  return d;
+}
+function insertSorted(div,cont){
+  const key=div.dataset.name.toLowerCase();
+  const before=[...cont.children].find(el=>el.dataset.name.toLowerCase()>key);
+  before?cont.insertBefore(div,before):cont.appendChild(div);
+}
+function reset(name){
+  document.querySelectorAll(`.champion[data-name='${name}']`).forEach(e=>e.remove());
+  const c=CHAMPS.find(x=>x.name===name); if(!c)return;
+  [["all-champions","left"],[`col-${c.role} .champion-list`,"center"]].forEach(([sel,o])=>{
+    const tgt=sel==="all-champions"?document.getElementById(sel):document.querySelector(sel);
+    const d=makeIcon(c); d.dataset.origin=o; insertSorted(d,tgt);});
+  enableDrag();
+}
+
+/*  remplissage colonnes  */
+function fillLeft(){
+  const zone=document.getElementById("all-champions"); zone.innerHTML="";
+  CHAMPS.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>{
+    const d=makeIcon(c); d.dataset.origin="left"; zone.appendChild(d);
+  });
+}
+function fillCenter(){
+  ["Top","Jungle","Mid","Support","ADC"].forEach(r=>{
+    const col=document.querySelector(`#col-${r} .champion-list`); col.innerHTML="";
+    CHAMPS.filter(c=>c.role===r).sort((a,b)=>a.name.localeCompare(b.name))
+          .forEach(c=>{const d=makeIcon(c); d.dataset.origin="center"; col.appendChild(d);});
+  });
+}
+
+/*  DnD */
+function enableDrag(){document.querySelectorAll(".champion").forEach(d=>d.ondragstart=e=>e.dataTransfer.setData("n",d.dataset.name));}
+function mkDrop(zone){
+  zone.ondragover=e=>{e.preventDefault();zone.classList.add("highlight");};
+  zone.ondragleave=()=>zone.classList.remove("highlight");
+  zone.ondrop=e=>{
+    e.preventDefault();zone.classList.remove("highlight");
+    const n=e.dataTransfer.getData("n"); reset(n);
+    const c=CHAMPS.find(x=>x.name===n); if(!c)return;
+    const ic=makeIcon(c); ic.dataset.origin="right"; zone.appendChild(ic); enableDrag();
+  };
+}
+function mkSlot(sl){
+  sl.ondragover=e=>{e.preventDefault();sl.classList.add("highlight");};
+  sl.ondragleave=()=>sl.classList.remove("highlight");
+  sl.ondrop=e=>{
+    e.preventDefault();sl.classList.remove("highlight");
+    if(sl.firstChild)return;
+    const n=e.dataTransfer.getData("n"); reset(n);
+    const c=CHAMPS.find(x=>x.name===n); if(!c)return;
+    const ic=makeIcon(c); ic.dataset.origin="allies"; sl.appendChild(ic); enableDrag();
+  };
+}
+
+/*  recherche */
+document.getElementById("search-bar").oninput=function(){
+  const q=this.value.toLowerCase();
+  document.querySelectorAll("#all-champions .champion").forEach(i=>{
+    i.style.display=i.dataset.name.toLowerCase().includes(q)?"inline-block":"none";
+  });
+};
+
+/*  aide */
+document.getElementById("show-help").onclick=()=>document.getElementById("help-overlay").style.display="flex";
+document.getElementById("close-help").onclick=()=>document.getElementById("help-overlay").style.display="none";
+document.getElementById("help-overlay").onclick=e=>{if(e.target.id==="help-overlay")e.currentTarget.style.display="none";};
+
+/* =========================================================================
+   7. LANCEMENT
+===========================================================================*/
+(async function(){
+  await loadRiot();
+  await loadLolalytics();
+  setRoles();
+  fillLeft(); fillCenter();
+
+  mkDrop(document.querySelector('[data-type="bans"]'));
+  mkDrop(document.querySelector('[data-type="enemies"]'));
+  [...document.querySelectorAll(".champion-slot.droppable")].forEach(mkSlot);
+  enableDrag();
+})();
+</script>
+</body>
+</html>
