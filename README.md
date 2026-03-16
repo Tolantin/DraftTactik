@@ -1,0 +1,1 @@
+Mon premier site utilisant JS et la manipulation de DOM. Outil de draft League of Legends : recherche de champions par role, glisser-deposer vers zones de bans, picks ennemis et composition alliee, pour suivre la draft en temps reel et organiser une compo cohérente.
