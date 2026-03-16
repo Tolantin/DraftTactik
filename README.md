@@ -1,26 +1,74 @@
-J'imagine que vous connaissez League of Legends ?
-Un jeu très populaire depuis des années. Pour ceux qui de connaissent pas :
+Draft Tactics est un projet web que j’ai développé pendant ma période d’auto-formation en développement web.
+L’objectif du projet est de proposer une interface permettant de réfléchir à la phase de sélection des champions (draft) dans League of Legends.
 
------ Explication du jeu -----
-League of Legends est un jeu en équipe où deux groupes de cinq joueurs s’affrontent pour détruire la base ennemie, appelée le Nexus. Chaque joueur contrôle un personnage unique, appelé champion. Une partie se joue surtout sur une grande carte avec trois voies principales et une jungle entre elles. Au début, les joueurs cherchent à gagner de l’or et de l’expérience pour devenir plus forts. Ensuite, ils se battent pour contrôler la carte, prendre des objectifs importants comme les dragons ou le Baron, détruire les tours adverses, puis ouvrir le chemin jusqu’au Nexus.
+Ce projet m’a notamment permis d’expérimenter et d’apprendre plusieurs concepts fondamentaux du JavaScript et de la manipulation du DOM, notamment à travers la mise en place d’un système interactif de drag & drop.
 
-Chaque joueur contrôle un champion. Un champion est un personnage avec ses propres sorts, ses forces et ses faiblesses. Au début de la partie, les joueurs choisissent leurs champions. Cette phase s’appelle souvent la sélection des champions. Chaque joueur doit choisir un personnage adapté à son rôle, comme le haut de la carte, la jungle, le milieu, le bas ou le support. Ce choix est très important, car il influence toute la partie avant même le début du match.
+Contexte
 
-La sélection des champions est un enjeu crucial parce qu’une équipe doit être équilibrée. Si une équipe choisit seulement des personnages fragiles, elle peut avoir du mal à résister en combat. Si elle choisit seulement des personnages défensifs, elle risque de manquer de dégâts. Il faut donc trouver un bon mélange entre attaque, défense, contrôle et mobilité.
+À ce moment-là, je me formais seul au développement web afin d’acquérir les bases du métier et de construire plusieurs projets concrets pour appuyer ma candidature à la formation D2WM de l’école ENI.
 
-Ce moment est aussi important parce que certains champions sont forts contre d’autres. Un joueur peut donc choisir un personnage qui gêne beaucoup son adversaire direct. À l’inverse, un mauvais choix peut rendre la phase de jeu très difficile. Cela veut dire que la partie peut déjà devenir compliquée avant même les premiers combats.
------ Explication du jeu -----
+Après avoir réalisé un premier site entièrement en HTML et CSS, j’ai rapidement atteint les limites de ces technologies pour créer des interfaces interactives.
+J’ai donc commencé à apprendre JavaScript.
 
+Un ami m’a alors proposé une idée de projet :
 
-Maintenant, parlons du contexte dans lequel j'ai codé ce site web.
+Créer un site capable d’aider à choisir les meilleurs champions pendant la phase de sélection, en s’appuyant sur une IA capable d’analyser les compositions d’équipes.
 
------ Contexte -----
-A ce moment-là, je m'auto-formais chez moi pour apprendre les bases du codages. Je m'étais mis comme objectifs de faires quelques sites afin d'appuyer ma candidature à la formation D2WM que proposais l'école ENI.
-Lorsque j'ai finis mon premier site qui était entièrement en html et css; et que j'ai également poussé ces langagues jusqu'à être limités par leurs fonctionnalités ; j'ai commencé par apprendre la JavaScript.
-Un ami à moi m'a partagé une de ses idées : "Faisons un site d'ôté d'une IA, afin de déterminer le meilleurs picks à prendre lors de la sélection des champions".
-Je me suis alors occuper de coder le site web, tandis qu'il travaillais sur l'IA.
-Mais j'avoue avoir été mis en difficulté. Je me suis alors aidé de ChatGPT pour améliorer mon code et appliqué les fonctionnalités qui nécéssité un niveau de compétences bien supérieur au miens.
+Dans ce projet :
 
+je me suis occupé du développement du site web
 
+mon ami travaillait sur la partie IA
 
+Cependant, certaines fonctionnalités dépassaient largement mon niveau à ce moment-là.
+Je me suis donc aidé de ChatGPT pour comprendre certaines implémentations, améliorer mon code et réussir à mettre en place des fonctionnalités plus avancées.
 
+Ce projet a été pour moi une étape importante d’apprentissage, notamment sur :
+
+la manipulation du DOM
+
+la gestion d’interfaces dynamiques
+
+l’implémentation d’un système de drag and drop
+
+l’organisation d’un projet web plus interactif
+
+League of Legends (contexte du projet)
+
+Pour comprendre l’objectif de Draft Tactics, il faut connaître rapidement le fonctionnement de League of Legends.
+
+League of Legends est un jeu compétitif en équipe où deux équipes de cinq joueurs s’affrontent pour détruire la base adverse appelée Nexus.
+
+Chaque joueur contrôle un personnage unique appelé champion, possédant ses propres compétences, forces et faiblesses.
+
+Avant le début de la partie, les joueurs passent par une phase appelée sélection des champions (champion select).
+Durant cette phase, chaque joueur choisit son personnage en fonction :
+
+de son rôle dans l’équipe
+
+des choix de ses coéquipiers
+
+des champions sélectionnés par l’équipe adverse
+
+Cette phase est extrêmement stratégique, car la composition de l’équipe peut fortement influencer le déroulement de la partie.
+
+Certains champions sont très efficaces contre d’autres, tandis que certaines compositions d’équipe fonctionnent mieux que d’autres.
+
+C’est précisément dans ce contexte que Draft Tactics intervient :
+proposer une interface permettant de réfléchir plus facilement aux choix de champions pendant cette phase stratégique.
+
+Ce que m’a appris ce projet
+
+Ce projet m’a permis de progresser sur plusieurs aspects du développement web :
+
+manipulation avancée du DOM
+
+création d’interfaces interactives
+
+gestion d’événements JavaScript
+
+implémentation d’un système de drag & drop
+
+structuration d’un projet front-end
+
+Il représente une étape importante de mon parcours d’apprentissage vers le développement web.
